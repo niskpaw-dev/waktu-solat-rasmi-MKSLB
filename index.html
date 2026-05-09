@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#053b29">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Waktu Solat MKSLB">
+<meta name="description" content="Waktu solat rasmi Masjid Kampung Sungai Lang Baru, Kuala Langat (SGR03). Akses pantas dari telefon.">
+
+<title>Waktu Solat · Masjid Kampung Sungai Lang Baru</title>
+
+<link rel="icon" href="https://arleta.site/interactivelink/1610/LOGO-MKSLB.png">
+<link rel="apple-touch-icon" href="https://arleta.site/interactivelink/1610/LOGO-MKSLB.png">
+
+<meta property="og:title" content="Waktu Solat · Masjid Kampung Sungai Lang Baru">
+<meta property="og:description" content="Jadual waktu solat rasmi MKSLB, Zon SGR03 Kuala Langat.">
+<meta property="og:image" content="https://arleta.site/interactivelink/1610/LOGO-MKSLB.png">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.waktusolat.app">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    /* Colour tokens */
+    --gold:        #d4af37;
+    --gold-soft:   #e8d28a;
+    --gold-deep:   #a88a2c;
+    --gold-glow:   rgba(212, 175, 55, 0.35);
+    --ink:         #fafaf7;
+    --ink-muted:   rgba(250, 250, 247, 0.72);
+    --ink-faint:   rgba(250, 250, 247, 0.45);
+
+/* Background — dynamic, switches through the day */
+    --bg-center:   #053b29;
+    --bg-edge:     #02120c;
+
+/* Surfaces */
+    --surface-raised: rgba(0, 0, 0, 0.45);
+    --border-soft:    rgba(212, 175, 55, 0.18);
+    --border-strong:  rgba(212, 175, 55, 0.45);
+
+/* Spacing */
+    --s-1: 0.25rem; --s-2: 0.5rem; --s-3: 0.75rem;
+    --s-4: 1rem;    --s-5: 1.5rem; --s-6: 2rem;
+    --s-7: 3rem;
+
+/* Radii */
+    --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 22px;
+
+/* Easing */
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    font-family: 'Fraunces', Georgia, serif;
+    margin: 0;
+    background:
+        radial-gradient(circle at 50% 0%,
+            var(--bg-center) 0%,
+            var(--bg-edge) 80%);
+    transition: background 1.5s var(--ease);
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: var(--ink);
+    overflow-x: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 8-pointed star pattern overlay (Islamic geometric motif) */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><g fill='none' stroke='%23d4af37' stroke-width='0.6' opacity='0.7'><rect x='22' y='22' width='46' height='46'/><rect x='22' y='22' width='46' height='46' transform='rotate(45 45 45)'/><circle cx='45' cy='45' r='3'/></g></svg>");
+    background-size: 90px 90px;
+    opacity: 0.13;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Subtle vignette warmth */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        transparent 30%,
+        rgba(0, 0, 0, 0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+main {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: var(--s-5) var(--s-4);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* ─── HEADER ─── */
+.hd {
+    text-align: center;
+    margin-bottom: var(--s-4);
+    opacity: 0;
+    animation: fadeUp 0.6s var(--ease) 0.1s forwards;
+}
+
+.hd-logo {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    margin: 0 auto var(--s-3);
+    display: block;
+    border: 1px solid var(--border-strong);
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hd-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: var(--s-1);
+}
+
+.hd-zone {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--gold-soft);
+}
+
+/* ─── DATE STRIP (JAKIM-style) ─── */
+.datestrip {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.92rem;
+    color: var(--ink);
+    letter-spacing: 0.03em;
+    margin-bottom: var(--s-5);
+    padding: var(--s-3) var(--s-4);
+    background: var(--surface-raised);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+    opacity: 0;
+    animation: fadeUp 0.6s var(--ease) 0.2s forwards;
+}
+
+.datestrip-sep {
+    color: var(--gold);
+    margin: 0 var(--s-2);
+    font-weight: 300;
+}
+
+.datestrip .h { color: var(--gold-soft); }
+
+/* ─── HERO COUNTDOWN (JAKIM-style) ─── */
+.hero {
+    position: relative;
+    text-align: center;
+    padding: var(--s-6) var(--s-4) var(--s-5);
+    margin-bottom: var(--s-5);
+    border-radius: var(--r-xl);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.10) 0%, transparent 70%),
+        var(--surface-raised);
+    border: 1px solid var(--border-strong);
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.3s forwards;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 15%; right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.hero-label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    color: var(--gold-soft);
+    margin-bottom: var(--s-3);
+}
+
+.hero-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin-bottom: var(--s-2);
+    line-height: 1.1;
+}
+
+.hero-time {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(1.15rem, 5vw, 1.5rem);
+    color: var(--ink-muted);
+    letter-spacing: 0.08em;
+    font-feature-settings: 'tnum' on, 'lnum' on;
+    margin-bottom: var(--s-5);
+}
+
+/* ─── 3-CIRCLE COUNTDOWN ─── */
+.circles {
+    display: flex;
+    justify-content: center;
+    gap: clamp(var(--s-3), 4vw, var(--s-5));
+    margin-bottom: var(--s-5);
+}
+
+.circle {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.circle-num {
+    width: clamp(72px, 22vw, 96px);
+    height: clamp(72px, 22vw, 96px);
+    border: 3px solid var(--gold);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--s-2);
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    color: var(--ink);
+    font-feature-settings: 'tnum' on, 'lnum' on;
+    box-shadow: 0 0 24px rgba(212, 175, 55, 0.15);
+    transition: border-color 0.3s var(--ease);
+}
+
+.circle-label {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+}
+
+.hero-sublabel {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.82rem;
+    color: var(--gold-soft);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--s-2);
+    line-height: 1.5;
+    padding: 0 var(--s-3);
+}
+
+.hero-loc {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+}
+
+/* ─── GRID 4-COL ─── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-2);
+    margin-bottom: var(--s-3);
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.4s forwards;
+}
+
+.tile {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-1);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    color: inherit;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    min-height: 72px;
+}
+
+.tile:active { transform: scale(0.96); }
+.tile:hover { background: rgba(212, 175, 55, 0.06); }
+
+.tile.next {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.04));
+    border-color: var(--gold);
+    box-shadow:
+        0 0 0 1px var(--gold-glow),
+        inset 0 0 20px rgba(212, 175, 55, 0.08);
+}
+
+.tile-name {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 0.66rem;
+    color: var(--gold-soft);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.tile.next .tile-name { color: var(--gold); }
+
+.tile-time {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(0.8rem, 3.2vw, 0.95rem);
+    color: var(--ink);
+    font-feature-settings: 'tnum' on, 'lnum' on;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.tile.next .tile-time {
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.hint {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    margin-bottom: var(--s-3);
+    letter-spacing: 0.04em;
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.5s forwards;
+}
+
+.disclaimer {
+    text-align: left;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-bottom: var(--s-5);
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.55s forwards;
+}
+
+/* ─── BUTTON KONGSI ─── */
+.btn-share {
+    width: 100%;
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    color: #1a0d00;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--r-md);
+    padding: var(--s-4);
+    cursor: pointer;
+    box-shadow:
+        0 6px 24px var(--gold-glow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-3);
+    margin-bottom: var(--s-4);
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.6s forwards;
+}
+
+.btn-share:active {
+    transform: translateY(1px) scale(0.99);
+    box-shadow: 0 3px 12px var(--gold-glow);
+}
+
+.btn-share svg { flex-shrink: 0; }
+
+/* ─── INFAQ ─── */
+.infaq {
+    background: var(--surface-raised);
+    border: 1px dashed var(--border-soft);
+    border-radius: var(--r-md);
+    padding: var(--s-3) var(--s-4);
+    text-align: center;
+    margin-bottom: var(--s-5);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.7s forwards;
+}
+
+.infaq:active { background: rgba(212, 175, 55, 0.06); }
+.infaq:hover  { border-color: var(--border-strong); }
+
+.infaq-label {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.72rem;
+    color: var(--gold-soft);
+    margin-bottom: 4px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.infaq-acc {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--ink);
+    font-feature-settings: 'tnum' on;
+    letter-spacing: 0.04em;
+}
+
+.infaq-bank {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+}
+
+/* ─── FOOTER ─── */
+.ft {
+    margin-top: auto;
+    padding-top: var(--s-4);
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.8s forwards;
+}
+
+/* ─── TOAST ─── */
+.toast {
+    position: fixed;
+    bottom: max(var(--s-5), env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0, 0, 0, 0.92);
+    border: 1px solid var(--border-strong);
+    color: var(--gold-soft);
+    padding: var(--s-3) var(--s-5);
+    border-radius: 100px;
+    font-family: 'Fraunces', serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+    pointer-events: none;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    white-space: nowrap;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ─── SKELETON LOADING ─── */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(212, 175, 55, 0.04) 0%,
+        rgba(212, 175, 55, 0.14) 50%,
+        rgba(212, 175, 55, 0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+    color: transparent !important;
+    text-shadow: none !important;
+    border-radius: 6px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .hd, .datestrip, .hero, .grid, .hint, .disclaimer,
+    .btn-share, .infaq, .ft {
+        opacity: 1;
+    }
+}
+
+/* ─── SMALL PHONES (≤360px) ─── */
+@media (max-width: 360px) {
+    main { padding: var(--s-4) var(--s-3); }
+    .hero { padding: var(--s-5) var(--s-3) var(--s-4); }
+    .hd-name { font-size: 0.85rem; letter-spacing: 0.14em; }
+    .datestrip { font-size: 0.82rem; }
+    .tile-name { font-size: 0.6rem; letter-spacing: 0.1em; }
+    .tile-time { font-size: 0.78rem; }
+    .grid { gap: 4px; }
+    .circles { gap: var(--s-2); }
+}
+
+/* ─── LARGER SCREENS (tablet+) ─── */
+@media (min-width: 600px) {
+    main { padding: var(--s-7) var(--s-5); }
+}
+</style>
+</head>
+<body>
+
+<main>
+    <header class="hd">
+        <img class="hd-logo" src="https://arleta.site/interactivelink/1610/LOGO-MKSLB.png" alt="Logo Masjid Kampung Sungai Lang Baru">
+        <div class="hd-name">Masjid Kampung Sungai Lang Baru</div>
+        <div class="hd-zone">Zon SGR03 · Kuala Langat, Selangor</div>
+    </header>
+
+<div class="datestrip">
+        <span id="dt" class="skeleton">10 Mei 2026 Miladi</span>
+        <span class="datestrip-sep">|</span>
+        <span id="dt-hijri" class="h skeleton">22 Zulkaedah 1447 Hijri</span>
+    </div>
+
+<section class="hero" aria-live="polite">
+        <div class="hero-label">Waktu Solat Seterusnya</div>
+        <div class="hero-name skeleton" id="cd-w">Memuatkan</div>
+        <div class="hero-time skeleton" id="cd-time">00 : 00 PM</div>
+
+<div class="circles" aria-hidden="true">
+            <div class="circle">
+                <div class="circle-num skeleton" id="c-h">00</div>
+                <div class="circle-label">Jam</div>
+            </div>
+            <div class="circle">
+                <div class="circle-num skeleton" id="c-m">00</div>
+                <div class="circle-label">Minit</div>
+            </div>
+            <div class="circle">
+                <div class="circle-num skeleton" id="c-s">00</div>
+                <div class="circle-label">Saat</div>
+            </div>
+        </div>
+
+<div class="hero-sublabel">Sehingga Waktu Solat Seterusnya Di Zon</div>
+        <div class="hero-loc">SGR03 · Kuala Langat</div>
+    </section>
+
+<section class="grid" id="gr" aria-label="Jadual waktu solat — tap untuk kongsi">
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Imsak</span><span class="tile-time skeleton">0:00 AM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Subuh</span><span class="tile-time skeleton">0:00 AM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Syuruk</span><span class="tile-time skeleton">0:00 AM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Dhuha</span><span class="tile-time skeleton">0:00 AM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Zohor</span><span class="tile-time skeleton">0:00 PM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Asar</span><span class="tile-time skeleton">0:00 PM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Maghrib</span><span class="tile-time skeleton">0:00 PM</span></button>
+        <button class="tile" type="button" disabled><span class="tile-name skeleton">Isyak</span><span class="tile-time skeleton">0:00 PM</span></button>
+    </section>
+
+<div class="hint">Tap mana-mana waktu untuk kongsi pantas</div>
+
+<div class="disclaimer">* Waktu Solat hanya bagi Semenanjung Malaysia, Sabah dan Sarawak. Sumber data: JAKIM via WaktuSolat.app</div>
+
+<button class="btn-share" id="btn-share" aria-label="Kongsi jadual waktu solat penuh">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m1.5 9.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-11-4a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0"/>
+        </svg>
+        Kongsi Jadual Penuh
+    </button>
+
+<div class="infaq" id="infaq" role="button" tabindex="0" aria-label="Salin nombor akaun infaq">
+        <span class="infaq-label">Tabung Infaq</span>
+        <span class="infaq-acc">1207 4010 0317 14</span>
+        <span class="infaq-bank">Bank Islam · tap untuk salin</span>
+    </div>
+
+<footer class="ft">
+        © 2026 Masjid Kampung Sungai Lang Baru
+    </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+    'use strict';
+
+    // ─── CONFIG ───
+    const ZONE      = 'SGR03';
+    const API       = `https://api.waktusolat.app/v2/solat/${ZONE}`;
+    const CACHE_KEY = 'mkslb_solat_v2';
+    const NAMES     = ['Imsak', 'Subuh', 'Syuruk', 'Dhuha', 'Zohor', 'Asar', 'Maghrib', 'Isyak'];
+    const EMOJIS    = ['🌥️', '⛅', '🌤️', '☀️', '🌞', '☀️', '🌙', '⭐'];
+    const HIJRI_M   = ['Muharram','Safar','Rabiulawal','Rabiulakhir','Jamadilawal',
+                       'Jamadilakhir','Rejab','Syaaban','Ramadan','Syawal','Zulkaedah','Zulhijjah'];
+    const MS_MONTHS = ['Januari','Februari','Mac','April','Mei','Jun',
+                       'Julai','Ogos','September','Oktober','November','Disember'];
+    const $ = (id) => document.getElementById(id);
+
+    // ─── STATE ───
+    let times = [];
+    let countdownTimer = null;
+
+    // ─── BOOT ───
+    init();
+
+    function init() {
+        const cached = readCache();
+        if (cached) {
+            times = cached;
+            render();
+        }
+        fetchFresh();
+
+        $('btn-share').addEventListener('click', shareJadualPenuh);
+        $('infaq').addEventListener('click', salinAkaun);
+        $('infaq').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); salinAkaun(); }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && times.length) render();
+        });
+    }
+
+    // ─── CACHE ───
+    function readCache() {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            const data = JSON.parse(raw);
+            if (new Date(data.fetchedAt).toDateString() !== new Date().toDateString()) return null;
+            return data.times.map(t => new Date(t));
+        } catch { return null; }
+    }
+
+    function writeCache(arr) {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                fetchedAt: new Date().toISOString(),
+                times: arr.map(t => t.toISOString())
+            }));
+        } catch {}
+    }
+
+    // ─── FETCH ───
+    async function fetchFresh() {
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            const today = data.prayers.find(p => p.day === new Date().getDate()) || data.prayers[0];
+
+            const subuh   = new Date(today.fajr    * 1000);
+            const imsak   = new Date(subuh.getTime() - 10 * 60000);
+            const syuruk  = new Date(today.syuruk  * 1000);
+            const dhuha   = new Date(syuruk.getTime() + 28 * 60000);
+            const zohor   = new Date(today.dhuhr   * 1000);
+            const asar    = new Date(today.asr     * 1000);
+            const maghrib = new Date(today.maghrib * 1000);
+            const isyak   = new Date(today.isha    * 1000);
+
+            times = [imsak, subuh, syuruk, dhuha, zohor, asar, maghrib, isyak];
+            writeCache(times);
+            render();
+        } catch (e) {
+            console.error('Fetch failed', e);
+            if (times.length === 0) showError();
+        }
+    }
+
+    // ─── RENDER ───
+    function render() {
+        renderDates();
+        renderHero();
+        renderGrid();
+        updateBackground();
+    }
+
+    function renderDates() {
+        const now = new Date();
+        const dt = $('dt');
+        dt.textContent = `${now.getDate()} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()} Miladi`;
+        dt.classList.remove('skeleton');
+
+        const dh = $('dt-hijri');
+        dh.textContent = formatHijri();
+        dh.classList.remove('skeleton');
+    }
+
+    function formatHijri() {
+        if (times.length === 0) return '— Hijri';
+        try {
+            const now = new Date();
+            const maghrib = times[6];
+            const offset = (now.getTime() >= maghrib.getTime()) ? 0 : -1;
+            const adjusted = new Date(now.getTime() + offset * 86400000);
+            const fmt = new Intl.DateTimeFormat('en-US-u-ca-islamic', {
+                day: 'numeric', month: 'numeric', year: 'numeric'
+            });
+            const parts = fmt.format(adjusted).split(' ')[0].split('/');
+            return `${parts[1]} ${HIJRI_M[parseInt(parts[0]) - 1]} ${parts[2]} Hijri`;
+        } catch { return '— Hijri'; }
+    }
+
+    function renderHero() {
+        const now = new Date();
+        const idx = times.findIndex(t => t > now);
+
+        const wEl = $('cd-w');
+        const tEl = $('cd-time');
+
+        wEl.classList.remove('skeleton');
+        tEl.classList.remove('skeleton');
+
+        if (idx === -1) {
+            wEl.textContent = 'Imsak Esok';
+            tEl.textContent = '—';
+            setCircles(0, 0, 0);
+            if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+            return;
+        }
+
+        const target = times[idx];
+        wEl.textContent = NAMES[idx];
+        tEl.textContent = formatTimeHero(target);
+        startCountdown(target);
+    }
+
+    function startCountdown(target) {
+        if (countdownTimer) clearInterval(countdownTimer);
+        const tick = () => {
+            const diff = Math.floor((target - new Date()) / 1000);
+            if (diff <= 0) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+                render();
+                return;
+            }
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = diff % 60;
+            setCircles(h, m, s);
+        };
+        tick();
+        countdownTimer = setInterval(tick, 1000);
+    }
+
+    function setCircles(h, m, s) {
+        const ch = $('c-h'), cm = $('c-m'), cs = $('c-s');
+        ch.textContent = String(h).padStart(2, '0');
+        cm.textContent = String(m).padStart(2, '0');
+        cs.textContent = String(s).padStart(2, '0');
+        ch.classList.remove('skeleton');
+        cm.classList.remove('skeleton');
+        cs.classList.remove('skeleton');
+    }
+
+    function formatTimeHero(date) {
+        let h = date.getHours();
+        const m = String(date.getMinutes()).padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${String(h).padStart(2, '0')} : ${m} ${ampm}`;
+    }
+
+    function formatTimeTile(date) {
+        let h = date.getHours();
+        const m = String(date.getMinutes()).padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+    }
+
+    function renderGrid() {
+        const now = new Date();
+        const nextIdx = times.findIndex(t => t > now);
+
+        $('gr').innerHTML = times.map((t, i) => `
+            <button class="tile ${i === nextIdx ? 'next' : ''}"
+                    type="button"
+                    data-idx="${i}"
+                    aria-label="Kongsi waktu ${NAMES[i]} ${formatTimeTile(t)}">
+                <span class="tile-name">${NAMES[i]}</span>
+                <span class="tile-time">${formatTimeTile(t)}</span>
+            </button>
+        `).join('');
+
+        $('gr').querySelectorAll('.tile').forEach(tile => {
+            tile.addEventListener('click', () => {
+                shareWaktu(parseInt(tile.dataset.idx, 10));
+            });
+        });
+    }
+
+    // ─── DYNAMIC BACKGROUND ───
+    function updateBackground() {
+        if (times.length === 0) return;
+        const now = Date.now();
+        const subuh   = times[1].getTime();
+        const syuruk  = times[2].getTime();
+        const asar    = times[5].getTime();
+        const maghrib = times[6].getTime();
+        const root = document.documentElement;
+
+        let center, edge;
+        if (now >= subuh && now < syuruk)        { center = '#0a5c44'; edge = '#021a11'; }
+        else if (now >= syuruk && now < asar)    { center = '#107c5b'; edge = '#052b1e'; }
+        else if (now >= asar && now < maghrib)   { center = '#146141'; edge = '#071c12'; }
+        else                                      { center = '#053b29'; edge = '#02120c'; }
+
+        root.style.setProperty('--bg-center', center);
+        root.style.setProperty('--bg-edge', edge);
+    }
+
+    // ─── SHARING ───
+    async function shareWaktu(idx) {
+        haptic();
+        const name = NAMES[idx];
+        const emoji = EMOJIS[idx];
+        const time = formatTimeTile(times[idx]);
+        const text = `${emoji} ${name}: ${time}\n📍 Masjid Kampung Sungai Lang Baru (SGR03)\n\n🌐 ${location.href}`;
+
+        if (navigator.share) {
+            try { await navigator.share({ title: `Waktu ${name}`, text }); }
+            catch { /* user cancelled — silent */ }
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            toast(`Waktu ${name} disalin`);
+        } catch {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+    }
+
+    async function shareJadualPenuh() {
+        haptic();
+        if (times.length === 0) { toast('Sila tunggu sebentar'); return; }
+
+        const dt = $('dt').textContent;
+        const dh = $('dt-hijri').textContent;
+
+        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kampung Sungai Lang Baru (SGR03)\n🗓️ ${dt}\n🌟 ${dh}\n\n\`\`\`\n`;
+        NAMES.forEach((n, i) => {
+            m += `${EMOJIS[i]}  ${n.padEnd(8)}: ${formatTimeTile(times[i])}\n`;
+        });
+        m += `\`\`\`\n\n🌐 Semak waktu langsung:\n${location.href}`;
+
+        if (navigator.share) {
+            try { await navigator.share({ title: 'Waktu Solat MKSLB', text: m }); }
+            catch { /* user cancelled */ }
+            return;
+        }
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(m)}`, '_blank');
+    }
+
+    async function salinAkaun() {
+        haptic();
+        try {
+            await navigator.clipboard.writeText('12074010031714');
+            toast('Nombor akaun disalin');
+        } catch {
+            toast('Tak boleh salin — sila copy manual');
+        }
+    }
+
+    // ─── UTILS ───
+    function haptic() {
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    let toastTimer;
+    function toast(msg) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function showError() {
+        $('cd-w').textContent = 'Tiada Sambungan';
+        $('cd-w').classList.remove('skeleton');
+        $('cd-time').textContent = '—';
+        $('cd-time').classList.remove('skeleton');
+        ['c-h', 'c-m', 'c-s'].forEach(id => {
+            $(id).textContent = '00';
+            $(id).classList.remove('skeleton');
+        });
+    }
+})();
+</script>
+</body>
+</html>
