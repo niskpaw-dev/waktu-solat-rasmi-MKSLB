@@ -743,7 +743,7 @@ main {
     function renderDates() {
         const now = new Date();
         const dt = $('dt');
-        dt.textContent = `${now.getDate()} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()} Miladi`;
+        dt.textContent = `${now.getDate()} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
         dt.classList.remove('skeleton');
 
         const dh = $('dt-hijri');
@@ -762,7 +762,7 @@ main {
                 day: 'numeric', month: 'numeric', year: 'numeric'
             });
             const parts = fmt.format(adjusted).split(' ')[0].split('/');
-            return `${parts[1]} ${HIJRI_M[parseInt(parts[0]) - 1]} ${parts[2]} Hijri`;
+            return `${parts[1]} ${HIJRI_M[parseInt(parts[0]) - 1]} ${parts[2]}`;
         } catch { return '— Hijri'; }
     }
 
