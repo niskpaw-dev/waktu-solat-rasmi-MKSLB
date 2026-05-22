@@ -904,7 +904,7 @@ main {
         const dt = $('dt').textContent;
         const dh = $('dt-hijri').textContent;
 
-        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kampung Sungai Lang Baru (SGR03)\n🗓️ ${dt}\n🌟 ${dh}\n\n\`\`\`\n`;
+        let m = `⏰ *Jadual Waktu Solat Hari Ini*\n📍 Masjid Kampung Sungai Lang Baru (SGR03)\n🗓️ ${dt}\n🌟 ${dh}\n\n\`\`\`\n`;
         NAMES.forEach((n, i) => {
             m += `${EMOJIS[i]}  ${n.padEnd(8)}: ${formatTimeTile(times[i])}\n`;
         });
