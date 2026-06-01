@@ -21,7 +21,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://api.waktusolat.app">
+<link rel="preconnect" href="https://api<link rel="preconnect" href="https://apiwaktusolatsgr03.vercel.app">.waktusolat.app">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 
 <style>
@@ -665,7 +665,8 @@ main {
 
     <div class="hint">Tap mana-mana waktu untuk kongsi pantas</div>
 
-    <div class="disclaimer">* Waktu Solat hanya bagi Semenanjung Malaysia, Sabah dan Sarawak. Sumber data: JAKIM via WaktuSolat.app</div>
+    <div class="disclaimer">* Waktu Solat hanya bagi Semenanjung Malaysia, Sabah dan Sarawak. Sumber da<div class="disclaimer">* Waktu Solat bagi Zon SGR03 Kuala Langat. Sumber data: JAKIM e-Solat + ketetapan Mufti Selangor</div>
+ta: JAKIM via WaktuSolat.app</div>
 
     <button class="btn-share" id="btn-share" aria-label="Kongsi jadual waktu solat penuh">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -692,8 +693,9 @@ main {
     'use strict';
 
     // ─── CONFIG ───
-    const ZONE      = 'SGR03';
-    const API       = `https://api.waktusolat.app/v2/solat/${ZONE}`;
+    // BARU
+const ZONE      = 'SGR03';
+const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
     const CACHE_KEY = 'mkslb_solat_v2';
     const NAMES     = ['Imsak', 'Subuh', 'Syuruk', 'Dhuha', 'Zohor', 'Asar', 'Maghrib', 'Isyak'];
     const EMOJIS    = ['🌥️', '⛅', '🌤️', '☀️', '🌞', '☀️', '🌙', '⭐'];
@@ -758,18 +760,20 @@ main {
             const res = await fetch(API);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
-            const today = data.prayers.find(p => p.day === new Date().getDate()) || data.prayers[0];
+            const t = data.times; // waktu dalam format "HH:MM"
 
-            const subuh   = new Date(today.fajr    * 1000);
-            const imsak   = new Date(subuh.getTime() - 10 * 60000);
-            const syuruk  = new Date(today.syuruk  * 1000);
-            const dhuha   = new Date(syuruk.getTime() + 28 * 60000);
-            const zohor   = new Date(today.dhuhr   * 1000);
-            const asar    = new Date(today.asr     * 1000);
-            const maghrib = new Date(today.maghrib * 1000);
-            const isyak   = new Date(today.isha    * 1000);
+            // Tukar "HH:MM" -> objek Date hari ini (supaya semua kod lain kekal sama)
+            const mk = (hhmm) => {
+                const [h, m] = hhmm.split(':').map(Number);
+                const x = new Date();
+                x.setHours(h, m, 0, 0);
+                return x;
+            };
 
-            times = [imsak, subuh, syuruk, dhuha, zohor, asar, maghrib, isyak];
+            times = [
+                mk(t.imsak), mk(t.subuh), mk(t.syuruk), mk(t.dhuha),
+                mk(t.zohor), mk(t.asar), mk(t.maghrib), mk(t.isyak)
+            ];
             writeCache(times);
             render();
         } catch (e) {
