@@ -156,6 +156,7 @@ main {
     background: var(--surface-raised);
     border-top: 1px solid var(--border-soft);
     border-bottom: 1px solid var(--border-soft);
+    line-height: 1.6;
     opacity: 0;
     animation: fadeUp 0.6s var(--ease) 0.2s forwards;
 }
@@ -248,7 +249,7 @@ main {
     width: 100%;
     height: 100%;
     display: block;
-    transform: rotate(-90deg); /* start fill from 12 o'clock */
+    transform: rotate(-90deg);
     overflow: visible;
 }
 
@@ -264,7 +265,7 @@ main {
     stroke-width: 4;
     stroke-linecap: round;
     stroke-dasharray: 100;
-    stroke-dashoffset: 100; /* starts empty, JS fills it */
+    stroke-dashoffset: 100;
     transition: stroke-dashoffset 0.95s linear;
     filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.5));
 }
@@ -605,9 +606,9 @@ main {
     </header>
 
     <div class="datestrip">
-        <span id="dt" class="skeleton">10 Mei 2026 Miladi</span>
+        <span id="dt" class="skeleton">Memuatkan tarikh</span>
         <span class="datestrip-sep">|</span>
-        <span id="dt-hijri" class="h skeleton">22 Zulkaedah 1447 Hijri</span>
+        <span id="dt-hijri" class="h skeleton">Hijri</span>
     </div>
 
     <section class="hero" aria-live="polite">
@@ -692,14 +693,10 @@ main {
     'use strict';
 
     // ─── CONFIG ───
-    // BARU
-const ZONE      = 'SGR03';
-const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
-    const CACHE_KEY = 'mkslb_solat_v2';
+    const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
+    const CACHE_KEY = 'mkslb_solat_v3'; // bump: cache shape kini termasuk Hijri
     const NAMES     = ['Imsak', 'Subuh', 'Syuruk', 'Dhuha', 'Zohor', 'Asar', 'Maghrib', 'Isyak'];
     const EMOJIS    = ['🌥️', '⛅', '🌤️', '☀️', '🌞', '☀️', '🌙', '⭐'];
-    const HIJRI_M   = ['Muharram','Safar','Rabiulawal','Rabiulakhir','Jamadilawal',
-                       'Jamadilakhir','Rejab','Syaaban','Ramadan','Syawal','Zulkaedah','Zulhijjah'];
     const MS_MONTHS = ['Januari','Februari','Mac','April','Mei','Jun',
                        'Julai','Ogos','September','Oktober','November','Disember'];
     const DAYS_MS   = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
@@ -707,19 +704,17 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
 
     // ─── STATE ───
     let times = [];
+    let hijriToday = null;     // { day, month, year, formatted } dari API
+    let hijriMaghrib = null;   // Hijri selepas Maghrib (= esok), dari API
     let countdownTimer = null;
-    let currentWindowSecs = 1; // duration from prev prayer → next prayer, in seconds
+    let currentWindowSecs = 1;
     let lastPercents = { s: -1, m: -1, h: -1 };
 
     // ─── BOOT ───
     init();
 
     function init() {
-        const cached = readCache();
-        if (cached) {
-            times = cached;
-            render();
-        }
+        if (readCache()) render(); // render serta-merta dari cache (kalau ada & hari sama)
         fetchFresh();
 
         $('btn-share').addEventListener('click', shareJadualPenuh);
@@ -737,18 +732,22 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
     function readCache() {
         try {
             const raw = localStorage.getItem(CACHE_KEY);
-            if (!raw) return null;
+            if (!raw) return false;
             const data = JSON.parse(raw);
-            if (new Date(data.fetchedAt).toDateString() !== new Date().toDateString()) return null;
-            return data.times.map(t => new Date(t));
-        } catch { return null; }
+            if (new Date(data.fetchedAt).toDateString() !== new Date().toDateString()) return false;
+            times = data.times.map(t => new Date(t));
+            hijriToday = data.hijriToday || null;
+            hijriMaghrib = data.hijriMaghrib || null;
+            return times.length === 8;
+        } catch { return false; }
     }
 
-    function writeCache(arr) {
+    function writeCache() {
         try {
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 fetchedAt: new Date().toISOString(),
-                times: arr.map(t => t.toISOString())
+                times: times.map(t => t.toISOString()),
+                hijriToday, hijriMaghrib
             }));
         } catch {}
     }
@@ -761,7 +760,7 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
             const data = await res.json();
             const t = data.times; // waktu dalam format "HH:MM"
 
-            // Tukar "HH:MM" -> objek Date hari ini (supaya semua kod lain kekal sama)
+            // "HH:MM" -> objek Date hari ini (kekal supaya kod countdown/grid tak berubah)
             const mk = (hhmm) => {
                 const [h, m] = hhmm.split(':').map(Number);
                 const x = new Date();
@@ -773,7 +772,12 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
                 mk(t.imsak), mk(t.subuh), mk(t.syuruk), mk(t.dhuha),
                 mk(t.zohor), mk(t.asar), mk(t.maghrib), mk(t.isyak)
             ];
-            writeCache(times);
+
+            // Hijri rasmi JAKIM — terus dari API (tiada kiraan di sini)
+            hijriToday = data.hijri_today || null;
+            hijriMaghrib = data.hijri_maghrib || null;
+
+            writeCache();
             render();
         } catch (e) {
             console.error('Fetch failed', e);
@@ -789,36 +793,33 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         updateBackground();
     }
 
+    // Masihi: client-side (resilient). Hijri: dari API (authoritative).
     function renderDates() {
-        const now = new Date();
         const dt = $('dt');
-        dt.textContent = `${now.getDate()} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()} Miladi`;
+        dt.textContent = gregorianFull();
         dt.classList.remove('skeleton');
 
         const dh = $('dt-hijri');
-        dh.textContent = formatHijri();
+        dh.textContent = hijriFormatted();
         dh.classList.remove('skeleton');
     }
 
-    function formatHijri() {
-        if (times.length === 0) return '— Hijri';
-        try {
-            const now = new Date();
-            const maghrib = times[6];
-            const offset = (now.getTime() >= maghrib.getTime()) ? 0 : -1;
-            const adjusted = new Date(now.getTime() + offset * 86400000);
-            const fmt = new Intl.DateTimeFormat('en-US-u-ca-islamic', {
-                day: 'numeric', month: 'numeric', year: 'numeric'
-            });
-            const parts = fmt.format(adjusted).split(' ')[0].split('/');
-            return `${parts[1]} ${HIJRI_M[parseInt(parts[0]) - 1]} ${parts[2]} Hijri`;
-        } catch { return '— Hijri'; }
+    // "Selasa, 02 Jun 2026"
+    function gregorianFull() {
+        const now = new Date();
+        return `${DAYS_MS[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
     }
 
-    // NEW: Format tarikh untuk share ("Isnin, 25 Mei 2026")
-    function formatTarikhShare() {
-        const now = new Date();
-        return `${DAYS_MS[now.getDay()]}, ${now.getDate()} ${MS_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+    // Tarikh Hijri tukar selepas Maghrib (ikut ketetapan).
+    // Sebelum Maghrib -> hijri_today; selepas Maghrib -> hijri_maghrib (rasmi JAKIM).
+    function hijriFormatted() {
+        const src = isAfterMaghrib() ? hijriMaghrib : hijriToday;
+        return (src && src.formatted) ? src.formatted : '—';
+    }
+
+    function isAfterMaghrib() {
+        if (times.length < 7) return false;
+        return Date.now() >= times[6].getTime();
     }
 
     function renderHero() {
@@ -841,9 +842,8 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         }
 
         const target = times[idx];
-        // Compute window duration (prev prayer → current target) for Jam ring scale
         const prevTime = (idx === 0)
-            ? new Date(target.getTime() - 12 * 3600 * 1000) // before Imsak: default 12h window
+            ? new Date(target.getTime() - 12 * 3600 * 1000)
             : times[idx - 1];
         currentWindowSecs = Math.max(1, (target - prevTime) / 1000);
 
@@ -884,22 +884,14 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         cs.classList.remove('skeleton');
     }
 
-    // NEW: Progress ring update logic
-    // Each ring deplete style: starts full when lots of time remains, empty when none.
-    // Wrap detection: if new percent jumps UP (e.g. saat 1% → 98%), snap instead of animating backwards.
     function updateRings(h, m, s, snap) {
-        // Saat ring: portion of 60-sec block remaining
         const sP = (s / 60) * 100;
-        // Minit ring: portion of 3600-sec (1 hour) block remaining — continuous, decrements every second
         const mP = ((m * 60 + s) / 3600) * 100;
-        // Jam ring: portion of full window remaining
         const totalRemaining = h * 3600 + m * 60 + s;
         const hP = Math.min(100, (totalRemaining / currentWindowSecs) * 100);
 
-        // Detect wraps (new value > last value + tolerance) — snap to avoid backward animation
         const sWrap = !snap && sP > lastPercents.s + 1;
         const mWrap = !snap && mP > lastPercents.m + 1;
-        // Jam never wraps within a window — only resets on prayer transition (handled via snap on first tick)
 
         setRing('s-ring', sP, snap || sWrap);
         setRing('m-ring', mP, snap || mWrap);
@@ -914,10 +906,9 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         const offset = 100 - Math.max(0, Math.min(100, percent));
 
         if (snap) {
-            // Disable transition, snap to new value, force reflow, re-enable transition
             el.classList.add('no-transition');
             el.style.strokeDashoffset = offset;
-            void el.getBoundingClientRect(); // force reflow
+            void el.getBoundingClientRect();
             el.classList.remove('no-transition');
         } else {
             el.style.strokeDashoffset = offset;
@@ -987,7 +978,7 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         const name = NAMES[idx];
         const emoji = EMOJIS[idx];
         const time = formatTimeTile(times[idx]);
-        const text = `${emoji} ${name}: ${time}\n🗓️ ${formatTarikhShare()}\n📍 Masjid Kg Sungai Lang Baru (SGR03)\n\n🌐 ${location.href}`;
+        const text = `${emoji} ${name}: ${time}\n🗓️ ${gregorianFull()}\n📍 Masjid Kg Sungai Lang Baru (SGR03)\n\n🌐 ${location.href}`;
 
         if (navigator.share) {
             try { await navigator.share({ title: `Waktu ${name}`, text }); }
@@ -1006,8 +997,8 @@ const API       = `https://apiwaktusolatsgr03.vercel.app/api/waktu-solat?today`;
         haptic();
         if (times.length === 0) { toast('Sila tunggu sebentar'); return; }
 
-        const tarikh = formatTarikhShare();
-        const hijri  = formatHijri();
+        const tarikh = gregorianFull();
+        const hijri  = hijriFormatted();
 
         let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kg Sungai Lang Baru (SGR03)\n🗓️ ${tarikh}\n🌟 ${hijri}\n\n\`\`\`\n`;
         NAMES.forEach((n, i) => {
