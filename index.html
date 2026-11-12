@@ -1028,7 +1028,7 @@ main {
         const name = NAMES[idx];
         const emoji = EMOJIS[idx];
         const time = formatTimeTile(times[idx]);
-        const text = `${emoji} ${name}: ${time}\n🗓️ ${gregorianFull()}\n📍 Masjid Kg Sungai Lang Baru, Kuala Langat\n\n🌐 ${location.href}`;
+        const text = `${emoji} ${name}: ${time}\n🗓️ ${gregorianFull()}\n📍 Masjid Kampung Sungai Lang Baru, Kuala Langat\n\n🌐 ${location.href}`;
 
         if (navigator.share) {
             try { await navigator.share({ title: `Waktu ${name}`, text }); }
@@ -1050,7 +1050,7 @@ main {
         const tarikh = gregorianFull();
         const hijri  = hijriFormatted();
 
-        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kg Sungai Lang Baru, Kuala Langat\n🗓️ ${tarikh}\n🌟 ${hijri}\n\n\`\`\`\n`;
+        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kampung Sungai Lang Baru, Kuala Langat\n🗓️ ${tarikh}\n🌟 ${hijri}\n\n\`\`\`\n`;
         NAMES.forEach((n, i) => {
             m += `${EMOJIS[i]}  ${n.padEnd(8)}: ${formatTimeTile(times[i])}\n`;
         });
