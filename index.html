@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Waktu Solat MKSLB">
-<meta name="description" content="Waktu solat rasmi Masjid Kampung Sungai Lang Baru, Kuala Langat (SGR03). Akses pantas dari telefon.">
+<meta name="description" content="Waktu solat rasmi Masjid Kampung Sungai Lang Baru, Daerah Kuala Langat. Akses pantas dari telefon.">
 
 <title>Waktu Solat · Masjid Kampung Sungai Lang Baru</title>
 
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="https://arleta.site/interactivelink/1610/logomkslbil.png">
 
 <meta property="og:title" content="Waktu Solat · Masjid Kampung Sungai Lang Baru">
-<meta property="og:description" content="Jadual waktu solat rasmi MKSLB, Zon SGR03 Kuala Langat.">
+<meta property="og:description" content="Jadual waktu solat rasmi MKSLB, Daerah Kuala Langat.">
 <meta property="og:image" content="https://arleta.site/interactivelink/1610/logomkslbil.png">
 <meta property="og:type" content="website">
 
@@ -602,7 +602,7 @@ main {
     <header class="hd">
         <img class="hd-logo" src="https://arleta.site/interactivelink/1610/logomkslbil.png" alt="Logo Masjid Kampung Sungai Lang Baru">
         <div class="hd-name">Masjid Kampung Sungai Lang Baru</div>
-        <div class="hd-zone">Zon SGR03 · Kuala Langat, Selangor</div>
+        <div class="hd-zone">Daerah Kuala Langat, Selangor</div>
     </header>
 
     <div class="datestrip">
@@ -649,8 +649,8 @@ main {
             </div>
         </div>
 
-        <div class="hero-sublabel">Sehingga Waktu Solat Seterusnya Di Zon</div>
-        <div class="hero-loc">SGR03 · Kuala Langat</div>
+        <div class="hero-sublabel">Sehingga Waktu Solat Seterusnya Di Daerah</div>
+        <div class="hero-loc">Kuala Langat</div>
     </section>
 
     <section class="grid" id="gr" aria-label="Jadual waktu solat — tap untuk kongsi">
@@ -666,7 +666,7 @@ main {
 
     <div class="hint">Tap mana-mana waktu untuk kongsi pantas</div>
 
-    <div class="disclaimer">* Waktu Solat bagi Zon SGR03 Kuala Langat. Sumber data: JAKIM e-Solat + ketetapan Mufti Selangor</div>
+    <div class="disclaimer">* Waktu solat bagi Daerah Kuala Langat. Sumber data: <span id="src">takwim rasmi waktu solat</span></div>
 
     <button class="btn-share" id="btn-share" aria-label="Kongsi jadual waktu solat penuh">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -682,7 +682,7 @@ main {
     </div>
 
     <footer class="ft">
-        © 2026 Masjid Kampung Sungai Lang Baru
+        © <span id="yr">2026</span> Masjid Kampung Sungai Lang Baru
     </footer>
 </main>
 
@@ -706,6 +706,7 @@ main {
     let times = [];
     let hijriToday = null;     // { day, month, year, formatted } dari API
     let hijriMaghrib = null;   // Hijri selepas Maghrib (= esok), dari API
+    let sourceText = null;     // sumber data rasmi (berubah ikut tahun), dari API
     let countdownTimer = null;
     let currentWindowSecs = 1;
     let lastPercents = { s: -1, m: -1, h: -1 };
@@ -738,6 +739,7 @@ main {
             times = data.times.map(t => new Date(t));
             hijriToday = data.hijriToday || null;
             hijriMaghrib = data.hijriMaghrib || null;
+            sourceText = data.source || null;
             return times.length === 8;
         } catch { return false; }
     }
@@ -747,7 +749,7 @@ main {
             localStorage.setItem(CACHE_KEY, JSON.stringify({
                 fetchedAt: new Date().toISOString(),
                 times: times.map(t => t.toISOString()),
-                hijriToday, hijriMaghrib
+                hijriToday, hijriMaghrib, source: sourceText
             }));
         } catch {}
     }
@@ -773,9 +775,10 @@ main {
                 mk(t.zohor), mk(t.asar), mk(t.maghrib), mk(t.isyak)
             ];
 
-            // Hijri rasmi JAKIM — terus dari API (tiada kiraan di sini)
+            // Hijri rasmi — terus dari API (tiada kiraan di sini)
             hijriToday = data.hijri_today || null;
             hijriMaghrib = data.hijri_maghrib || null;
+            sourceText = data.source || null;
 
             writeCache();
             render();
@@ -786,7 +789,15 @@ main {
     }
 
     // ─── RENDER ───
+    function renderMeta() {
+        const yr = document.getElementById('yr');
+        if (yr) yr.textContent = new Date().getFullYear();
+        const src = document.getElementById('src');
+        if (src && sourceText) src.textContent = sourceText;
+    }
+
     function render() {
+        renderMeta();
         renderDates();
         renderHero();
         renderGrid();
@@ -978,7 +989,7 @@ main {
         const name = NAMES[idx];
         const emoji = EMOJIS[idx];
         const time = formatTimeTile(times[idx]);
-        const text = `${emoji} ${name}: ${time}\n🗓️ ${gregorianFull()}\n📍 Masjid Kg Sungai Lang Baru (SGR03)\n\n🌐 ${location.href}`;
+        const text = `${emoji} ${name}: ${time}\n🗓️ ${gregorianFull()}\n📍 Masjid Kg Sungai Lang Baru, Kuala Langat\n\n🌐 ${location.href}`;
 
         if (navigator.share) {
             try { await navigator.share({ title: `Waktu ${name}`, text }); }
@@ -1000,7 +1011,7 @@ main {
         const tarikh = gregorianFull();
         const hijri  = hijriFormatted();
 
-        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kg Sungai Lang Baru (SGR03)\n🗓️ ${tarikh}\n🌟 ${hijri}\n\n\`\`\`\n`;
+        let m = `⏰ *Jadual Waktu Solat*\n📍 Masjid Kg Sungai Lang Baru, Kuala Langat\n🗓️ ${tarikh}\n🌟 ${hijri}\n\n\`\`\`\n`;
         NAMES.forEach((n, i) => {
             m += `${EMOJIS[i]}  ${n.padEnd(8)}: ${formatTimeTile(times[i])}\n`;
         });
